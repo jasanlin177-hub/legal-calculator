@@ -9,7 +9,7 @@ import { formatInputDateTime, fetchSunTimesFromCWA, formatROCDateTime } from './
 import { generateRightsNotification, generateArrestNoticeSelf, generateArrestNoticeRelative } from './utils/documentGenerator';
 import { OBSTACLE_TYPES } from './data/constants';
 
-const App = () => {
+const App = () => {h
   const [arrestDateTime, setArrestDateTime] = useState(formatInputDateTime(new Date()));
   const [arrestLocation, setArrestLocation] = useState('');
   const [sunTimes, setSunTimes] = useState(null);
@@ -153,7 +153,7 @@ const App = () => {
 
         <CaseInfo caseInfo={caseInfo} updateField={updateField} onAgencyChange={handleAgencyChange} onSubAgencyChange={handleSubAgencyChange} arrestDateTime={arrestDateTime} setArrestDateTime={setArrestDateTime} arrestLocation={arrestLocation} setArrestLocation={setArrestLocation} sunTimes={sunTimes} />
         <ObstacleList obstacles={obstacles} onAdd={addObstacle} onRemove={removeObstacle} onUpdate={updateObstacle} sunTimes={sunTimes} />
-        <Summary arrestDateTime={arrestDateTime} totalObstacleTime={totalObstacleTime} deadlineInfo={deadlineInfo} isWanted={caseInfo.isWanted} />
+        <Summary arrestDateTime={arrestDateTime} totalObstacleTime={totalObstacleTime} deadlineInfo={deadlineInfo} isWanted={caseInfo.isWanted} caseInfo={caseInfo} obstacles={obstacles} arrestLocation={arrestLocation} />
       </div>
     </div>
   );
