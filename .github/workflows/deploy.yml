@@ -23,10 +23,28 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Prepare Vite entry index.html
+        run: |
+          mv index.html index.html.bundle
+          cat > index.html << 'EOF'
+          <!doctype html>
+          <html lang="zh-TW">
+            <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <title>解送人犯法定障礙事由計算機</title>
+            </head>
+            <body>
+              <div id="root"></div>
+              <script type="module" src="/src/main.jsx"></script>
+            </body>
+          </html>
+          EOF
+
       - name: Build
         run: npm run build
 
-      - name: Copy dist/index.html to root
+      - name: Replace root index.html with built version
         run: cp dist/index.html index.html
 
       - name: Commit and push built index.html
