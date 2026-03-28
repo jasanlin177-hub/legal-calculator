@@ -107,7 +107,7 @@ const Summary = ({
                                   <FileText className="w-4 h-4" />
                                   匯出 法定障礙事由
                         </button>button>
-                </div>div>
+                </div>
           
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-4">
@@ -116,25 +116,25 @@ const Summary = ({
                                               <p className="text-xl font-mono text-white">
                                                 {formatROCDateTime(arrestDateTime) || '--'}
                                               </p>p>
-                                  </div>div>
+                                  </div>
                                   <div>
                                               <p className="text-gray-400 text-sm">障礙事由總計</p>p>
                                               <p className="text-xl font-mono text-yellow-400">
                                                 {totalObstacleTime.hours} 小時 {totalObstacleTime.minutes} 分
                                               </p>p>
-                                  </div>div>
-                        </div>div>
+                                  </div>
+                        </div>
                         <div className="bg-white/10 rounded-lg p-4 border border-white/10">
                                   <p className="text-gray-300 text-sm mb-1">{displayResultLabel}</p>p>
                                   <div className="text-2xl font-bold text-green-400 font-mono">
                                     {deadlineInfo ? deadlineInfo.formatted : '--'}
-                                  </div>div>
+                                  </div>
                                   <p className="text-xs text-gray-400 mt-2">
                                     {displayFormulaLabel}
                                   </p>p>
-                        </div>div>
-                </div>div>
-          </div>div>
+                        </div>
+                </div>
+          </div>
         );
 };
 
