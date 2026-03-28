@@ -9,7 +9,7 @@ import { formatInputDateTime, fetchSunTimesFromCWA, formatROCDateTime } from './
 import { generateRightsNotification, generateArrestNoticeSelf, generateArrestNoticeRelative } from './utils/documentGenerator';
 import { OBSTACLE_TYPES } from './data/constants';
 
-const App = () => {h
+const App = () => {
   const [arrestDateTime, setArrestDateTime] = useState(formatInputDateTime(new Date()));
   const [arrestLocation, setArrestLocation] = useState('');
   const [sunTimes, setSunTimes] = useState(null);
