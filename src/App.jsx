@@ -89,11 +89,11 @@ const App = () => {
           <div>
             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
               <Clock className="text-blue-600 w-8 h-8" />
-              解送人犯法定障礙事由計算機 v2.2
+              解送人犯法定障礙事由計算機 v2.3
             </h1>
             <div className="flex items-center gap-3 mt-1">
               <p className="text-gray-500">
-                設計：文一偵查林正賢 協作AI：Claude、Gemini (2026/03 氣象署API+逮捕文書版 v2.2)
+                設計：文一偵查林正賢 協作AI：Claude、Gemini (2026/03 氣象署API+逮捕文書版 v2.3)
               </p>
               {isFetching && (
                 <span className="flex items-center gap-1 text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
