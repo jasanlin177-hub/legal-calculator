@@ -99,39 +99,39 @@ const Summary = ({
                         <h2 className="text-lg font-bold flex items-center gap-2">
                                   <Clock className="w-5 h-5 text-green-400" />
                                   統計結果
-                        </h2>h2>
+                        </h2>
                         <button
                                     onClick={handleExportTxt}
                                     className="flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition text-sm font-medium"
                                   >
                                   <FileText className="w-4 h-4" />
                                   匯出 法定障礙事由
-                        </button>button>
+                        </button>
                 </div>
           
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-4">
                                   <div>
-                                              <p className="text-gray-400 text-sm">拘提/逮捕時間</p>p>
+                                              <p className="text-gray-400 text-sm">拘提/逮捕時間</p>
                                               <p className="text-xl font-mono text-white">
                                                 {formatROCDateTime(arrestDateTime) || '--'}
-                                              </p>p>
+                                              </p>
                                   </div>
                                   <div>
-                                              <p className="text-gray-400 text-sm">障礙事由總計</p>p>
+                                              <p className="text-gray-400 text-sm">障礙事由總計</p>
                                               <p className="text-xl font-mono text-yellow-400">
                                                 {totalObstacleTime.hours} 小時 {totalObstacleTime.minutes} 分
-                                              </p>p>
+                                              </p>
                                   </div>
                         </div>
                         <div className="bg-white/10 rounded-lg p-4 border border-white/10">
-                                  <p className="text-gray-300 text-sm mb-1">{displayResultLabel}</p>p>
+                                  <p className="text-gray-300 text-sm mb-1">{displayResultLabel}</p>
                                   <div className="text-2xl font-bold text-green-400 font-mono">
                                     {deadlineInfo ? deadlineInfo.formatted : '--'}
                                   </div>
                                   <p className="text-xs text-gray-400 mt-2">
                                     {displayFormulaLabel}
-                                  </p>p>
+                                  </p>
                         </div>
                 </div>
           </div>
@@ -139,4 +139,3 @@ const Summary = ({
 };
 
 export default Summary;
-</div>
