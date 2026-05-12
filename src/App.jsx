@@ -229,7 +229,6 @@ const App = () => {
         />
 
         <RoomNotificationPanel
-          activeSuspect={activeSuspect}
           caseSession={caseSession}
         />
 
