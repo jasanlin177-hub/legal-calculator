@@ -52,27 +52,27 @@ const chunkArr = (arr, size) => {
   return out;
 };
 
-// 18 columns, A4 portrait (11906 wide), 1cm margins → usable 10772 dxa, table 10600
+// 18 columns, A4 landscape (16838 wide), 1cm margins → usable 15704 dxa, table 15600
 const W = [
-  900,  // 0: 姓名
-  460,  // 1: 性別
-  510,  // 2: 出生年
-  460,  // 3: 出生月
-  460,  // 4: 出生日
-  460,  // 5: 職業
-  1300, // 6: 身分證統一編號
-  1800, // 7: 住居所
-  460,  // 8: 候詢時數
-  380,  // 9: 強制到場月
-  380,  // 10: 強制到場日
-  380,  // 11: 強制到場時
-  360,  // 12: 入/出室月
-  360,  // 13: 入/出室日
-  360,  // 14: 入/出室時
-  360,  // 15: 入/出室分
-  460,  // 16: 准否接見
-  750,  // 17: 備考（捺指紋）
-]; // total: 10600
+  1300, // 0: 姓名
+  680,  // 1: 性別
+  750,  // 2: 出生年
+  680,  // 3: 出生月
+  680,  // 4: 出生日
+  680,  // 5: 職業
+  1900, // 6: 身分證統一編號
+  2670, // 7: 住居所
+  680,  // 8: 候詢時數
+  560,  // 9: 強制到場月
+  560,  // 10: 強制到場日
+  560,  // 11: 強制到場時
+  530,  // 12: 入/出室月
+  530,  // 13: 入/出室日
+  530,  // 14: 入/出室時
+  530,  // 15: 入/出室分
+  680,  // 16: 准否接見
+  1100, // 17: 備考（捺指紋）
+]; // total: 15600
 
 const TOTAL_W = W.reduce((a, b) => a + b, 0);
 const L_SPAN = 12; // cols 0-11: agency+title
@@ -210,7 +210,7 @@ const buildDocxBlob = (data, isEntry) => {
   <w:body>
     ${pages.join(pageBreak())}
     <w:sectPr>
-      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>
       <w:pgMar w:top="567" w:right="567" w:bottom="567" w:left="567" w:header="0" w:footer="0" w:gutter="0"/>
     </w:sectPr>
   </w:body>
