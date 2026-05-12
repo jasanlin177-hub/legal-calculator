@@ -85,7 +85,7 @@ const generateDocxFromTemplate = async (templatePath, data, outputName) => {
   }
 };
 
-// ================= 匯出按鈕綁定 =================
+// ================= 單份下載（按鈕直接觸發）=================
 
 export const generateRightsNotification = (data) => {
   generateDocxFromTemplate('./template_12.docx', data, `附件12_權利告知書_${data.caseInfo?.suspectName || '未命名'}.docx`);
@@ -98,3 +98,46 @@ export const generateArrestNoticeSelf = (data) => {
 export const generateArrestNoticeRelative = (data) => {
   generateDocxFromTemplate('./template_17.docx', data, `附件17_告知親友通知書_${data.caseInfo?.suspectName || '未命名'}.docx`);
 };
+
+// ================= 回傳 Blob（供批次匯出使用）=================
+
+const generateDocxBlobFromTemplate = async (templatePath, data) => {
+  try {
+    const b64 = templateMap[templatePath];
+    if (!b64) throw new Error(`找不到對應的範本：${templatePath}`);
+    const content = base64ToArrayBuffer(b64);
+    const zip = new PizZip(content);
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true, linebreaks: true,
+      delimiters: { start: '{{', end: '}}' }
+    });
+    const dates = getTemplateDates(data.arrestDateTime);
+    const caseInfo = data.caseInfo || {};
+    const currentUnit = caseInfo.policeUnit || '　　　　　';
+    doc.render({
+      suspectName: caseInfo.suspectName || '　　　　　',
+      caseCause: caseInfo.caseCause || '　　　　　',
+      officer: caseInfo.officer || '　　　　　',
+      agencyFull: `${caseInfo.policeAgency || ''}${caseInfo.policeSubAgency || ''}`,
+      policeUnit: currentUnit, unit: currentUnit,
+      arrestLocation: data.arrestLocation || '　　　　　　　　　　　',
+      ...dates
+    });
+    return doc.getZip().generate({
+      type: 'blob',
+      mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    });
+  } catch (e) {
+    console.error('產生 Blob 失敗:', e);
+    return null;
+  }
+};
+
+export const generateDocxBlobRightsNotification = (data) =>
+  generateDocxBlobFromTemplate('./template_12.docx', data);
+
+export const generateDocxBlobArrestNoticeSelf = (data) =>
+  generateDocxBlobFromTemplate('./template_16.docx', data);
+
+export const generateDocxBlobArrestNoticeRelative = (data) =>
+  generateDocxBlobFromTemplate('./template_17.docx', data);
