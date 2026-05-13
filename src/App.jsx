@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, FileText, WifiOff, Loader2, Save, FolderOpen, CheckCircle, Download, FileDown } from 'lucide-react';
+import { Clock, FileText, WifiOff, Loader2, Save, FolderOpen, CheckCircle, Download, FileDown, AlertTriangle } from 'lucide-react';
 import { useCase } from './hooks/useCase';
 import CaseInfo from './components/LegalCalculator/CaseInfo';
 import ObstacleList from './components/LegalCalculator/ObstacleList';
@@ -12,7 +12,7 @@ import { batchExportAllDocuments, exportObstacleRecordAsText } from './utils/exp
 
 const App = () => {
   const [showLoadModal, setShowLoadModal] = useState(false);
-  const [batchProgress, setBatchProgress] = useState(null); // null | {done, total}
+  const [batchProgress, setBatchProgress] = useState(null);
 
   const {
     caseSession,
@@ -45,7 +45,6 @@ const App = () => {
     setBatchProgress(null);
   };
 
-  // 為現有 documentGenerator 組裝參數（沿用舊格式）
   const buildDocData = () => ({
     caseInfo: {
       suspectName: activeSuspect.suspectName,
@@ -61,36 +60,34 @@ const App = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 font-sans text-gray-900">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-100 p-4 font-sans text-gray-900">
+      <div className="max-w-5xl mx-auto space-y-4">
 
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-600 flex justify-between items-center flex-wrap gap-4">
+        <div className="bg-blue-900 rounded-xl shadow-lg p-5 flex justify-between items-center flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-              <Clock className="text-blue-600 w-8 h-8" />
-              解送人犯法定障礙事由計算機 v3.0
+            <h1 className="text-xl font-bold text-white flex items-center gap-2">
+              <Clock className="text-blue-300 w-6 h-6 flex-shrink-0" />
+              解送人犯法定障礙事由計算機
+              <span className="text-blue-300 font-normal text-sm ml-1">v3.0</span>
             </h1>
-            <div className="flex items-center gap-3 mt-1">
-              <p className="text-gray-500">
-                設計：文一偵查林正賢 協作AI：Claude (2026/05 多人支援版 v3.0)
-              </p>
+            <p className="text-blue-300 text-xs mt-1 flex items-center gap-2">
+              設計：文一偵查林正賢　協作AI：Claude (2026/05 多人支援版)
               {isFetching && (
-                <span className="flex items-center gap-1 text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
-                  <Loader2 className="w-3 h-3 animate-spin" /> 同步氣象署資料中...
+                <span className="flex items-center gap-1 text-blue-200 bg-blue-800 px-2 py-0.5 rounded-full">
+                  <Loader2 className="w-3 h-3 animate-spin" /> 同步氣象署...
                 </span>
               )}
-            </div>
+            </p>
           </div>
-          {/* 儲存/載入 */}
           <div className="flex items-center gap-2">
             {saveStatus === 'saved' && (
-              <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+              <span className="flex items-center gap-1 text-xs text-green-300 bg-green-900/50 px-2 py-1 rounded-full">
                 <CheckCircle className="w-3 h-3" /> 已儲存
               </span>
             )}
             {saveStatus === 'saving' && (
-              <span className="flex items-center gap-1 text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
+              <span className="flex items-center gap-1 text-xs text-blue-200 bg-blue-800 px-2 py-1 rounded-full">
                 <Loader2 className="w-3 h-3 animate-spin" /> 儲存中...
               </span>
             )}
@@ -98,13 +95,13 @@ const App = () => {
               onClick={manualSave}
               disabled={!caseSession.id}
               title={caseSession.id ? '儲存案件' : '請先輸入第一名嫌犯姓名及逮捕時間'}
-              className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium transition"
+              className="flex items-center gap-1 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium transition"
             >
               <Save className="w-4 h-4" /> 儲存案件
             </button>
             <button
               onClick={() => setShowLoadModal(true)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition"
+              className="flex items-center gap-1 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-lg text-sm font-medium transition"
             >
               <FolderOpen className="w-4 h-4" /> 載入案件
             </button>
@@ -118,55 +115,59 @@ const App = () => {
           />
         )}
 
-        {/* 書表快速匯出面板 */}
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200 flex flex-wrap items-center gap-4">
-          <span className="text-gray-700 font-semibold flex items-center gap-2">
-            <FileText className="w-5 h-5 text-gray-500" />
-            自動產出公文書表（{activeSuspect.suspectName || '當前嫌犯'}）：
-          </span>
-          <button
-            onClick={() => generateRightsNotification(buildDocData())}
-            className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-4 py-2 rounded-lg hover:bg-indigo-100 transition text-sm font-medium"
-          >
-            附件12: 權利告知書
-          </button>
-          <button
-            onClick={() => generateArrestNoticeSelf(buildDocData())}
-            className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg hover:bg-blue-100 transition text-sm font-medium"
-          >
-            附件16: 告知本人通知書
-          </button>
-          <button
-            onClick={() => generateArrestNoticeRelative(buildDocData())}
-            className="bg-cyan-50 text-cyan-700 border border-cyan-200 px-4 py-2 rounded-lg hover:bg-cyan-100 transition text-sm font-medium"
-          >
-            附件17: 告知親友通知書
-          </button>
+        {/* 書表匯出面板 */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 space-y-4">
+          {/* 當前嫌犯書表 */}
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">
+              當前嫌犯書表（{activeSuspect.suspectName || '—'}）
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => generateRightsNotification(buildDocData())}
+                className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm"
+              >
+                <FileText className="w-4 h-4" /> 權利告知書
+              </button>
+              <button
+                onClick={() => generateArrestNoticeSelf(buildDocData())}
+                className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm"
+              >
+                <FileText className="w-4 h-4" /> 告知本人通知書
+              </button>
+              <button
+                onClick={() => generateArrestNoticeRelative(buildDocData())}
+                className="flex items-center gap-1.5 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm"
+              >
+                <FileText className="w-4 h-4" /> 告知親友通知書
+              </button>
+            </div>
+          </div>
 
-          {/* 分隔線 */}
-          <div className="w-full h-px bg-gray-100 my-1" />
-
-          {/* 批次匯出 */}
-          <span className="text-gray-700 font-semibold flex items-center gap-2 w-full">
-            <Download className="w-5 h-5 text-gray-500" />
-            案件批次操作：
-          </span>
-          <button
-            onClick={handleBatchExport}
-            disabled={!!batchProgress}
-            className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-4 py-2 rounded-lg hover:bg-emerald-100 transition text-sm font-medium disabled:opacity-50"
-          >
-            {batchProgress
-              ? `匯出中 ${batchProgress.done}/${batchProgress.total}...`
-              : `批次匯出全部書表（${caseSession.suspects.length}人 × 3份）`}
-          </button>
-          <button
-            onClick={() => exportObstacleRecordAsText(caseSession)}
-            className="bg-amber-50 text-amber-700 border border-amber-200 px-4 py-2 rounded-lg hover:bg-amber-100 transition text-sm font-medium flex items-center gap-1"
-          >
-            <FileDown className="w-4 h-4" />
-            匯出障礙事由記錄表 (.txt)
-          </button>
+          {/* 案件批次操作 */}
+          <div className="border-t border-gray-100 pt-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">
+              案件批次操作（{caseSession.suspects.length} 人）
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleBatchExport}
+                disabled={!!batchProgress}
+                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm disabled:opacity-50"
+              >
+                <Download className="w-4 h-4" />
+                {batchProgress
+                  ? `匯出中 ${batchProgress.done}/${batchProgress.total}...`
+                  : `批次匯出全部書表（${caseSession.suspects.length}人 × 3份）`}
+              </button>
+              <button
+                onClick={() => exportObstacleRecordAsText(caseSession)}
+                className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm"
+              >
+                <FileDown className="w-4 h-4" /> 匯出障礙事由記錄表
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* 嫌犯分頁列 */}
@@ -182,26 +183,26 @@ const App = () => {
         {activeSuspect.isOffline && (
           <div className="bg-amber-50 rounded-xl shadow-sm p-5 border border-amber-200">
             <div className="flex gap-3">
-              <WifiOff className="text-amber-500 w-6 h-6 flex-shrink-0" />
+              <AlertTriangle className="text-amber-500 w-6 h-6 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="text-amber-800 font-bold text-lg">目前處於無網路環境</h3>
-                <div className="flex gap-6 mt-2">
+                <h3 className="text-amber-800 font-bold text-base">目前處於無網路環境</h3>
+                <div className="flex gap-6 mt-3">
                   <label className="flex flex-col gap-1">
-                    <span className="text-sm font-semibold text-amber-900">手動輸入當日日落</span>
+                    <span className="text-sm font-medium text-amber-900">手動輸入當日日落</span>
                     <input
                       type="time"
                       value={activeSuspect.sunTimes?.sunset || '18:00'}
                       onChange={e => handleManualSunTimeChange('sunset', e.target.value)}
-                      className="border border-amber-300 rounded px-2 py-1"
+                      className="border border-amber-300 rounded-lg px-3 py-1.5 text-sm"
                     />
                   </label>
                   <label className="flex flex-col gap-1">
-                    <span className="text-sm font-semibold text-amber-900">手動輸入隔日日出</span>
+                    <span className="text-sm font-medium text-amber-900">手動輸入隔日日出</span>
                     <input
                       type="time"
                       value={activeSuspect.sunTimes?.sunrise || '06:00'}
                       onChange={e => handleManualSunTimeChange('sunrise', e.target.value)}
-                      className="border border-amber-300 rounded px-2 py-1"
+                      className="border border-amber-300 rounded-lg px-3 py-1.5 text-sm"
                     />
                   </label>
                 </div>
@@ -239,6 +240,7 @@ const App = () => {
           isWanted={activeSuspect.isWanted}
           allDeadlines={allDeadlines}
         />
+
       </div>
     </div>
   );

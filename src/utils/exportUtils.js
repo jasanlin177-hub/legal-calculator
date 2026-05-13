@@ -132,6 +132,7 @@ export const batchExportAllDocuments = async (caseSession, onProgress) => {
     blobs.push({ name: `${base}_附件17_告知親友通知書_${name}.docx`, fn: () => generateDocxBlobArrestNoticeRelative(docData) });
   }
 
+  const errors = [];
   const hasFSA = typeof window.showDirectoryPicker === 'function';
   if (hasFSA) {
     let dirHandle;
@@ -143,13 +144,13 @@ export const batchExportAllDocuments = async (caseSession, onProgress) => {
     for (const item of blobs) {
       try {
         const blob = await item.fn();
-        if (!blob) continue;
         const fh = await dirHandle.getFileHandle(item.name, { create: true });
         const writable = await fh.createWritable();
         await writable.write(blob);
         await writable.close();
       } catch (e) {
         console.error('寫入失敗:', item.name, e);
+        errors.push(`${item.name}：${e.message}`);
       }
       done++;
       onProgress?.(done, total);
@@ -158,13 +159,17 @@ export const batchExportAllDocuments = async (caseSession, onProgress) => {
     for (const item of blobs) {
       try {
         const blob = await item.fn();
-        if (blob) saveAs(blob, item.name);
+        saveAs(blob, item.name);
       } catch (e) {
         console.error('下載失敗:', item.name, e);
+        errors.push(`${item.name}：${e.message}`);
       }
       done++;
       onProgress?.(done, total);
       await new Promise(r => setTimeout(r, 120));
     }
+  }
+  if (errors.length > 0) {
+    alert(`匯出完成，但以下 ${errors.length} 份文件失敗：\n\n${errors.join('\n')}`);
   }
 };

@@ -102,35 +102,30 @@ export const generateArrestNoticeRelative = (data) => {
 // ================= 回傳 Blob（供批次匯出使用）=================
 
 const generateDocxBlobFromTemplate = async (templatePath, data) => {
-  try {
-    const b64 = templateMap[templatePath];
-    if (!b64) throw new Error(`找不到對應的範本：${templatePath}`);
-    const content = base64ToArrayBuffer(b64);
-    const zip = new PizZip(content);
-    const doc = new Docxtemplater(zip, {
-      paragraphLoop: true, linebreaks: true,
-      delimiters: { start: '{{', end: '}}' }
-    });
-    const dates = getTemplateDates(data.arrestDateTime);
-    const caseInfo = data.caseInfo || {};
-    const currentUnit = caseInfo.policeUnit || '　　　　　';
-    doc.render({
-      suspectName: caseInfo.suspectName || '　　　　　',
-      caseCause: caseInfo.caseCause || '　　　　　',
-      officer: caseInfo.officer || '　　　　　',
-      agencyFull: `${caseInfo.policeAgency || ''}${caseInfo.policeSubAgency || ''}`,
-      policeUnit: currentUnit, unit: currentUnit,
-      arrestLocation: data.arrestLocation || '　　　　　　　　　　　',
-      ...dates
-    });
-    return doc.getZip().generate({
-      type: 'blob',
-      mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    });
-  } catch (e) {
-    console.error('產生 Blob 失敗:', e);
-    return null;
-  }
+  const b64 = templateMap[templatePath];
+  if (!b64) throw new Error(`找不到對應的範本：${templatePath}`);
+  const content = base64ToArrayBuffer(b64);
+  const zip = new PizZip(content);
+  const doc = new Docxtemplater(zip, {
+    paragraphLoop: true, linebreaks: true,
+    delimiters: { start: '{{', end: '}}' }
+  });
+  const dates = getTemplateDates(data.arrestDateTime);
+  const caseInfo = data.caseInfo || {};
+  const currentUnit = caseInfo.policeUnit || '　　　　　';
+  doc.render({
+    suspectName: caseInfo.suspectName || '　　　　　',
+    caseCause: caseInfo.caseCause || '　　　　　',
+    officer: caseInfo.officer || '　　　　　',
+    agencyFull: `${caseInfo.policeAgency || ''}${caseInfo.policeSubAgency || ''}`,
+    policeUnit: currentUnit, unit: currentUnit,
+    arrestLocation: data.arrestLocation || '　　　　　　　　　　　',
+    ...dates
+  });
+  return doc.getZip().generate({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  });
 };
 
 export const generateDocxBlobRightsNotification = (data) =>
