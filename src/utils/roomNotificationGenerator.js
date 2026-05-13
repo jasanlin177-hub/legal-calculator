@@ -236,16 +236,7 @@ const buildOneForm = (suspects, isEntry, entryDT, exitDT, copyNum, agencyName, c
   copyLabel(copyNum) +
   buildFormTable(suspects, isEntry, entryDT, exitDT, agencyName, caseCause);
 
-const buildDocxBlob = (data, isEntry) => {
-  const { agencyName = '', caseCause = '', entryDateTime, exitDateTime, suspects = [] } = data;
-  const groups = suspects.length > 0 ? chunkArr(suspects, 5) : [[]];
-
-  const pages = [];
-  for (const group of groups) {
-    pages.push(buildOneForm(group, isEntry, entryDateTime, exitDateTime, 1, agencyName, caseCause));
-    pages.push(buildOneForm(group, isEntry, entryDateTime, exitDateTime, 2, agencyName, caseCause));
-  }
-
+const buildDocxBlob = (pages) => {
   const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
   xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -280,7 +271,28 @@ const buildDocxBlob = (data, isEntry) => {
 };
 
 export const generateBothNotifications = (data) => {
-  const name = data.suspects?.[0]?.suspectName || '未命名';
-  saveAs(buildDocxBlob(data, true),  `入室通知單_${name}.docx`);
-  setTimeout(() => saveAs(buildDocxBlob(data, false), `出室通知單_${name}.docx`), 150);
+  const { agencyName = '', caseCause = '', entryDateTime, exitDateTime, suspects = [] } = data;
+  const groups = suspects.length > 0 ? chunkArr(suspects, 5) : [[]];
+
+  const pages = [];
+  // 入室通知單：第一聯 + 第二聯
+  for (const group of groups) {
+    pages.push(buildOneForm(group, true,  entryDateTime, exitDateTime, 1, agencyName, caseCause));
+    pages.push(buildOneForm(group, true,  entryDateTime, exitDateTime, 2, agencyName, caseCause));
+  }
+  // 出室通知單：第一聯 + 第二聯
+  for (const group of groups) {
+    pages.push(buildOneForm(group, false, entryDateTime, exitDateTime, 1, agencyName, caseCause));
+    pages.push(buildOneForm(group, false, entryDateTime, exitDateTime, 2, agencyName, caseCause));
+  }
+
+  // 檔名：民國年月日 + 入出候詢室通知單 + 姓名 + 等N人
+  const today  = fmtRoc(new Date().toISOString());
+  const dateStr = `${today.y}${String(today.m).padStart(2,'0')}${String(today.d).padStart(2,'0')}`;
+  const firstName = suspects[0]?.suspectName || '未命名';
+  const n = suspects.length;
+  const namePart = n <= 1 ? `${firstName}1人` : `${firstName}等${n}人`;
+  const filename = `${dateStr}入出候詢室通知單${namePart}.docx`;
+
+  saveAs(buildDocxBlob(pages), filename);
 };
