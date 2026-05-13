@@ -133,61 +133,18 @@ export const batchExportAllDocuments = async (caseSession, onProgress) => {
   }
 
   const errors = [];
-  // file:// 協定或不支援時直接走 FileSaver 路徑
-  const hasFSA = typeof window.showDirectoryPicker === 'function'
-    && window.location.protocol !== 'file:';
-
-  if (hasFSA) {
-    let dirHandle;
+  // 直接走瀏覽器下載（FileSaver），存至預設下載資料夾，不跳出資料夾選擇器
+  for (const item of blobs) {
     try {
-      dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-    } catch {
-      return; // 使用者取消
+      const blob = await item.fn();
+      saveAs(blob, item.name);
+    } catch (e) {
+      console.error('下載失敗:', item.name, e);
+      errors.push(`${item.name}：${e.message}`);
     }
-    let fsaFailed = false; // 若 FSA 寫入被拒，切換至 FileSaver 模式
-    for (const item of blobs) {
-      try {
-        const blob = await item.fn();
-        if (!fsaFailed) {
-          try {
-            const fh = await dirHandle.getFileHandle(item.name, { create: true });
-            const writable = await fh.createWritable();
-            await writable.write(blob);
-            await writable.close();
-          } catch (fsaErr) {
-            console.warn('FSA 寫入失敗，切換至瀏覽器下載模式:', fsaErr.message);
-            fsaFailed = true;
-            // 當前這個檔案也改用 FileSaver
-            saveAs(blob, item.name);
-            await new Promise(r => setTimeout(r, 120));
-          }
-        } else {
-          saveAs(blob, item.name);
-          await new Promise(r => setTimeout(r, 120));
-        }
-      } catch (e) {
-        console.error('產生 Blob 失敗:', item.name, e);
-        errors.push(`${item.name}：${e.message}`);
-      }
-      done++;
-      onProgress?.(done, total);
-    }
-    if (fsaFailed) {
-      alert('您的瀏覽器/環境不支援寫入指定資料夾，已改為逐一下載至預設下載資料夾。');
-    }
-  } else {
-    for (const item of blobs) {
-      try {
-        const blob = await item.fn();
-        saveAs(blob, item.name);
-      } catch (e) {
-        console.error('下載失敗:', item.name, e);
-        errors.push(`${item.name}：${e.message}`);
-      }
-      done++;
-      onProgress?.(done, total);
-      await new Promise(r => setTimeout(r, 120));
-    }
+    done++;
+    onProgress?.(done, total);
+    await new Promise(r => setTimeout(r, 200));
   }
   if (errors.length > 0) {
     alert(`匯出完成，但以下 ${errors.length} 份文件產出失敗：\n\n${errors.join('\n')}`);

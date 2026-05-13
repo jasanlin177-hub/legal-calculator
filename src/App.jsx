@@ -39,10 +39,13 @@ const App = () => {
 
   const handleBatchExport = async () => {
     setBatchProgress({ done: 0, total: caseSession.suspects.length * 3 });
-    await batchExportAllDocuments(caseSession, (done, total) => {
-      setBatchProgress({ done, total });
-    });
-    setBatchProgress(null);
+    try {
+      await batchExportAllDocuments(caseSession, (done, total) => {
+        setBatchProgress({ done, total });
+      });
+    } finally {
+      setBatchProgress(null);
+    }
   };
 
   const buildDocData = () => ({
