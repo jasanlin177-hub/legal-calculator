@@ -52,9 +52,17 @@ const tc = (content, { w, gs, vm, shaded } = {}) => {
   return `<w:tc><w:tcPr>${gridSpan}${width}${vMerge}${CELL_BORDER}${shd}<w:vAlign w:val="center"/></w:tcPr>${content}</w:tc>`;
 };
 
-const tr = (cells, height) => {
-  const trPr = height ? `<w:trPr><w:trHeight w:val="${height}" w:hRule="atLeast"/></w:trPr>` : '';
+const tr = (cells, height, hRule = 'exact') => {
+  const trPr = height ? `<w:trPr><w:trHeight w:val="${height}" w:hRule="${hRule}"/></w:trPr>` : '';
   return `<w:tr>${trPr}${cells}</w:tr>`;
+};
+
+// 簽章區儲存格：外框保留粗線，內部水平線隱藏
+const closingCell = (content, { isFirst = false, isLast = false } = {}) => {
+  const topB    = isFirst ? `<w:top    w:val="single" w:sz="8" w:space="0" w:color="000000"/>` : `<w:top    w:val="nil"/>`;
+  const bottomB = isLast  ? `<w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>` : `<w:bottom w:val="nil"/>`;
+  const borders = `<w:tcBorders>${topB}<w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>${bottomB}<w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/></w:tcBorders>`;
+  return `<w:tc><w:tcPr><w:tcW w:w="${TOTAL_W}" w:type="dxa"/><w:gridSpan w:val="19"/>${borders}<w:vAlign w:val="center"/></w:tcPr>${content}</w:tc>`;
 };
 
 const chunkArr = (arr, size) => {
@@ -148,7 +156,8 @@ const buildFormTable = (suspects, isEntry, entryDT, exitDT, agencyName, caseCaus
     contCell(W[17]) + contCell(W[18])
   );
 
-  // ── Rows 3-7: 5 筆資料列
+  // ── Rows 3-7: 5 筆資料列，固定列高 1 cm = 567 twips
+  const CM1 = 567;
   const dataRows = Array.from({ length: 5 }, (_, i) => {
     const s      = suspects[i] ?? null;
     const forced = s ? fmtRoc(s.arrestDateTime) : {};
@@ -173,14 +182,13 @@ const buildFormTable = (suspects, isEntry, entryDT, exitDT, agencyName, caseCaus
       dCell(s ? rt.h : '',  W[15]) +
       dCell(s ? rt.min : '', W[16]) +
       dCell('', W[17]) +
-      dCell('', W[18])
+      dCell('', W[18]),
+      CM1  // 固定 1 cm
     );
   });
 
-  // ── 正文 + 此致 + 候詢室 + 承辦人 列（固定列高比照範本）
-  const fullCell = (content) =>
-    tc(content, { w: TOTAL_W, gs: 19 });
-
+  // ── 簽章區（正文 / 此致 / 候詢室 / 承辦人 / 核章）
+  // 列高：1cm / 1cm / 1cm / 2cm / 5cm；區域內格線隱藏，僅保留外框
   const n         = suspects.filter(Boolean).length;
   const firstName = suspects[0]?.suspectName || '　　';
   const namePart  = n <= 1
@@ -190,13 +198,14 @@ const buildFormTable = (suspects, isEntry, entryDT, exitDT, agencyName, caseCaus
     ? `　　上開${namePart}因涉嫌${caseCause || '　　　　'}案送入候詢室（簽收：　　　　　　　　　　　　　　 ）`
     : `　　上開${namePart}已自候詢室出室（簽收：　　　　　　　　　　　　　　 ）`;
 
-  const bodyRow  = tr(fullCell(pn(rn(bodyText,                                                   { sz: 24 }), { before: 60, after: 0  })), 675);
-  const cizhiRow = tr(fullCell(pn(rn('　　　　此　致',                                           { sz: 24 }), { before: 20, after: 0  })), 553);
-  const roomRow  = tr(fullCell(pn(rn('　　候詢室',                                               { sz: 24 }), { before: 20, after: 0  })), 615);
-  const sigRow   = tr(fullCell(
-    pn(rn('　　　　　　　　承辦人　　　　　　　　　　　　　敬會　勤務指揮中心　　　　機關主管長官', { sz: 24 }), { before: 20, after: 0  }) +
-    pn(rn('　　　　　　　（簽　　章）',                                                           { sz: 24 }), { before: 0,  after: 60 })
-  ), 971);
+  const bodyRow  = tr(closingCell(pn(rn(bodyText,                                                        { sz: 24 }), { before: 60, after: 0 }), { isFirst: true }),  567);
+  const cizhiRow = tr(closingCell(pn(rn('　　　　此　致',                                               { sz: 24 }), { before: 0,  after: 0 })),                     567);
+  const roomRow  = tr(closingCell(pn(rn('　　候詢室',                                                   { sz: 24 }), { before: 0,  after: 0 })),                     567);
+  const sigRow   = tr(closingCell(
+    pn(rn('　　　　　　　　承辦人　　　　　　　　　　　　　敬會　勤務指揮中心　　　　機關主管長官',       { sz: 24 }), { before: 20, after: 0 }) +
+    pn(rn('　　　　　　　（簽　　章）',                                                                   { sz: 24 }), { before: 0,  after: 0 })
+  ),                                                                                                                                            1134);
+  const stampRow = tr(closingCell(pn(rn('', { sz: 24 }), { before: 0, after: 0 }), { isLast: true }),   2835);
 
   return `<w:tbl>
 <w:tblPr>
@@ -212,7 +221,7 @@ const buildFormTable = (suspects, isEntry, entryDT, exitDT, agencyName, caseCaus
   </w:tblCellMar>
 </w:tblPr>
 <w:tblGrid>${W.map(w => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>
-${row0}${row1}${row2}${dataRows.join('')}${bodyRow}${cizhiRow}${roomRow}${sigRow}
+${row0}${row1}${row2}${dataRows.join('')}${bodyRow}${cizhiRow}${roomRow}${sigRow}${stampRow}
 </w:tbl>`;
 };
 
