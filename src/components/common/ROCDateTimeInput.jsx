@@ -5,7 +5,7 @@ const ROCDateTimeInput = ({ value, onChange, disabled }) => {
     if (!isoString) return { year: '', month: '', day: '', hour: '', minute: '' };
     const date = new Date(isoString);
     if (isNaN(date.getTime())) return { year: '', month: '', day: '', hour: '', minute: '' };
-    
+
     return {
       year: date.getFullYear() - 1911,
       month: String(date.getMonth() + 1).padStart(2, '0'),
@@ -16,21 +16,28 @@ const ROCDateTimeInput = ({ value, onChange, disabled }) => {
   };
 
   const [dateParts, setDateParts] = useState(parseISO(value));
+  const [isFuture, setIsFuture] = useState(false);
 
   useEffect(() => {
     setDateParts(parseISO(value));
+    setIsFuture(value ? new Date(value) > new Date() : false);
   }, [value]);
 
   const handleChange = (field, val) => {
     const newParts = { ...dateParts, [field]: val };
     setDateParts(newParts);
-    
+
     // 只有當所有欄位都有值時，才觸發 onChange 回傳 ISO 字串
-    if (newParts.year && newParts.month && newParts.day && newParts.hour && newParts.minute) {
+    if (newParts.year && newParts.month && newParts.day && newParts.hour !== '' && newParts.minute !== '') {
       const westernYear = parseInt(newParts.year, 10) + 1911;
-      // 簡單防呆
       if (westernYear > 1900 && westernYear < 2100) {
         const isoStr = `${westernYear}-${newParts.month}-${newParts.day}T${newParts.hour}:${newParts.minute}`;
+        const dt = new Date(isoStr);
+        if (dt > new Date()) {
+          setIsFuture(true);
+          return; // 不接受未來時間
+        }
+        setIsFuture(false);
         onChange(isoStr);
       }
     }
@@ -39,6 +46,12 @@ const ROCDateTimeInput = ({ value, onChange, disabled }) => {
   const range = (start, end) => Array.from({ length: end - start + 1 }, (_, i) => String(start + i).padStart(2, '0'));
 
   return (
+    <div>
+    {isFuture && (
+      <p className="text-xs text-red-600 mb-1 flex items-center gap-1">
+        ⚠ 逮捕時間不能晚於現在，請重新輸入
+      </p>
+    )}
     <div className="flex flex-wrap items-center gap-1 sm:gap-2">
       <div className="flex items-center">
         <span className="text-gray-500 mr-1 text-sm">民國</span>
@@ -93,6 +106,7 @@ const ROCDateTimeInput = ({ value, onChange, disabled }) => {
           {range(0, 59).map(m => <option key={m} value={m}>{m}</option>)}
         </select>
       </div>
+    </div>
     </div>
   );
 };
