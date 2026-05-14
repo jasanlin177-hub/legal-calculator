@@ -55,16 +55,18 @@ const ObstacleList = ({ obstacles, onAdd, onRemove, onUpdate, sunTimes }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs text-gray-500 block mb-1">開始時間</label>
-                    <ROCDateTimeInput 
-                      value={obstacle.startDateTime} 
-                      onChange={(val) => onUpdate(obstacle.id, 'startDateTime', val, sunTimes?.sunrise)} 
+                    <ROCDateTimeInput
+                      value={obstacle.startDateTime}
+                      onChange={(val) => onUpdate(obstacle.id, 'startDateTime', val, sunTimes?.sunrise)}
+                      allowFuture={true}
                     />
                   </div>
                   <div>
                     <label className="text-xs text-gray-500 block mb-1">結束時間</label>
-                    <ROCDateTimeInput 
-                      value={obstacle.endDateTime} 
-                      onChange={(val) => onUpdate(obstacle.id, 'endDateTime', val)} 
+                    <ROCDateTimeInput
+                      value={obstacle.endDateTime}
+                      onChange={(val) => onUpdate(obstacle.id, 'endDateTime', val)}
+                      allowFuture={true}
                     />
                   </div>
                 </div>

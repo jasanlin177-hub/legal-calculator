@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const ROCDateTimeInput = ({ value, onChange, disabled }) => {
+const ROCDateTimeInput = ({ value, onChange, disabled, allowFuture = false }) => {
   const parseISO = (isoString) => {
     if (!isoString) return { year: '', month: '', day: '', hour: '', minute: '' };
     const date = new Date(isoString);
@@ -20,8 +20,10 @@ const ROCDateTimeInput = ({ value, onChange, disabled }) => {
 
   useEffect(() => {
     setDateParts(parseISO(value));
-    setIsFuture(value ? new Date(value) > new Date() : false);
-  }, [value]);
+    if (!allowFuture) {
+      setIsFuture(value ? new Date(value) > new Date() : false);
+    }
+  }, [value, allowFuture]);
 
   const handleChange = (field, val) => {
     const newParts = { ...dateParts, [field]: val };
@@ -32,12 +34,14 @@ const ROCDateTimeInput = ({ value, onChange, disabled }) => {
       const westernYear = parseInt(newParts.year, 10) + 1911;
       if (westernYear > 1900 && westernYear < 2100) {
         const isoStr = `${westernYear}-${newParts.month}-${newParts.day}T${newParts.hour}:${newParts.minute}`;
-        const dt = new Date(isoStr);
-        if (dt > new Date()) {
-          setIsFuture(true);
-          return; // 不接受未來時間
+        if (!allowFuture) {
+          const dt = new Date(isoStr);
+          if (dt > new Date()) {
+            setIsFuture(true);
+            return; // 不接受未來時間
+          }
+          setIsFuture(false);
         }
-        setIsFuture(false);
         onChange(isoStr);
       }
     }

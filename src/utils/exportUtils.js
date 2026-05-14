@@ -4,7 +4,7 @@ import {
   generateDocxBlobArrestNoticeSelf,
   generateDocxBlobArrestNoticeRelative
 } from './documentGenerator';
-import { calculateTotalObstacleTime, calculateDeadline, formatROCDateTime } from './dateUtils';
+import { calculateTotalObstacleTime, calculateDeadline } from './dateUtils';
 import { OBSTACLE_TYPES } from '../data/constants';
 
 // ─────────────────────────────────────────
@@ -26,73 +26,86 @@ export const buildBaseFilename = (caseSession) => {
 };
 
 // ─────────────────────────────────────────
-// 法定障礙事由記錄表（.txt）
+// 法定障礙事由記錄表（.txt）— 格式完全比照解送人犯報告書
 // ─────────────────────────────────────────
-const chineseNum = (n) => ['一','二','三','四','五','六','七','八','九','十',
-  '十一','十二','十三','十四','十五','十六','十七','十八','十九','二十'][n] ?? String(n+1);
+const SEP = '='.repeat(60);
 
-const formatDateShort = (isoStr) => {
-  if (!isoStr) return '（未輸入）';
+const fmtRocDateTime = (isoStr) => {
+  if (!isoStr) return '';
   const d = new Date(isoStr);
-  if (isNaN(d)) return isoStr;
+  if (isNaN(d)) return '';
   const y = d.getFullYear() - 1911;
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const day = String(d.getDate()).padStart(2,'0');
-  const h = String(d.getHours()).padStart(2,'0');
-  const min = String(d.getMinutes()).padStart(2,'0');
-  return `${y}/${m}/${day} ${h}:${min}`;
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const h = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${y}年${m}月${day}日 ${h}:${min}`;
 };
 
-const pad = (n, w=2) => String(n).padStart(w, ' ');
-
 export const generateObstacleRecordText = (caseSession) => {
-  const now = new Date();
-  const rocNow = now.getFullYear() - 1911;
-  const lines = [];
+  const records = caseSession.suspects.map((s) => {
+    const lines = [];
+    const isWantedBool = String(s.isWanted) === 'true';
+    const policeHours = isWantedBool ? 24 : 16;
+    const combinedHours = policeHours + 8; // 警察時限 + 檢察官 8 小時
 
-  lines.push('解送人犯法定障礙事由記錄表');
-  lines.push('═'.repeat(48));
-  lines.push(`案由：${caseSession.caseCause || '（未填）'}　承辦人：${caseSession.officer || '（未填）'}`);
-  lines.push(`機關：${caseSession.policeAgency || ''}${caseSession.policeSubAgency ? ' ' + caseSession.policeSubAgency : ''}${caseSession.policeUnit ? ' ' + caseSession.policeUnit : ''}`);
-  lines.push(`建立日期：民國${rocNow}年${String(now.getMonth()+1).padStart(2,'0')}月${String(now.getDate()).padStart(2,'0')}日`);
-  lines.push('═'.repeat(48));
-
-  caseSession.suspects.forEach((s, idx) => {
+    lines.push('法定障礙事由記錄表');
     lines.push('');
-    lines.push(`【嫌疑人${chineseNum(idx)}】${s.suspectName || '（未命名）'}`);
-    lines.push('─'.repeat(48));
-    lines.push(`  拘提時間：${formatDateShort(s.arrestDateTime)}`);
-    lines.push(`  通緝犯：${s.isWanted === 'true' ? '是' : '否'}　基準時限：${s.isWanted === 'true' ? '24' : '16'}小時`);
+    lines.push(`案由：${caseSession.caseCause || ''}`);
+    lines.push(`是否為通緝犯：${isWantedBool ? '是' : '否'}`);
+    lines.push(`犯罪嫌疑人：${s.suspectName || ''}`);
+    lines.push(`承辦人：${caseSession.officer || ''}`);
+    lines.push(`警察機關：${caseSession.policeAgency || ''}`);
+    lines.push(`所屬機關：${caseSession.policeSubAgency || ''}`);
+    lines.push(`單位：${caseSession.policeUnit || ''}`);
+    lines.push(`機關地址：${caseSession.unitAddress || ''}`);
+    lines.push(`拘提/逮捕時間：${fmtRocDateTime(s.arrestDateTime)}`);
+    lines.push(`拘提/逮捕地點：${s.arrestLocation || ''}`);
+    lines.push('');
+    lines.push('法定障礙事由明細');
+    lines.push(SEP);
 
-    const tot = calculateTotalObstacleTime(s.obstacles);
+    // 將已輸入的障礙事由依類型分組（同一類型可多筆）
+    const byType = {};
+    (s.obstacles || []).forEach(o => {
+      const id = String(o.type);
+      if (!byType[id]) byType[id] = [];
+      byType[id].push(o);
+    });
+
+    // 9 種法定事由逐一列出；有資料者填入起迄時間，無則留空
+    OBSTACLE_TYPES.forEach(t => {
+      const matches = byType[String(t.id)] || [];
+      lines.push(`□ ${t.name}`);
+      if (matches.length === 0) {
+        lines.push(`  (${'　'.repeat(15)})`);
+      } else {
+        const content = matches
+          .map(o => `${fmtRocDateTime(o.startDateTime)} 至 ${fmtRocDateTime(o.endDateTime)}`)
+          .join('；');
+        lines.push(`  (${content})`);
+      }
+    });
+
+    lines.push(SEP);
+
+    const tot = calculateTotalObstacleTime(s.obstacles || []);
     const dl = calculateDeadline(s.arrestDateTime, tot.totalMinutes, s.isWanted);
+    const deadlineStr = dl ? fmtRocDateTime(dl.deadline.toISOString()) : '（無法計算）';
 
-    if (s.obstacles.length === 0) {
-      lines.push('  法定障礙事由：（無）');
-    } else {
-      lines.push('');
-      lines.push('  法定障礙事由：');
-      s.obstacles.forEach((o, oi) => {
-        const typeName = OBSTACLE_TYPES.find(t => String(t.id) === String(o.type))?.name || `類型${o.type}`;
-        lines.push(`  No.${oi+1}  類型：${typeName}`);
-        lines.push(`        開始：${formatDateShort(o.startDateTime)}`);
-        lines.push(`        結束：${formatDateShort(o.endDateTime)}`);
-        lines.push(`        小計：${o.hours}小時${o.minutes}分`);
-      });
-    }
-
+    lines.push(`因上述法定障礙事由，其經過之時間合計（ ${tot.hours} ）小時 ( ${tot.minutes} ) 分`);
+    lines.push(`（註：上列每一法定障礙事由下之括弧內均須記明起迄之日、時、分）`);
     lines.push('');
-    lines.push(`  障礙事由總計：${tot.hours}小時${tot.minutes}分`);
-    lines.push(`  解送期限：${dl ? formatDateShort(dl.deadline.toISOString()) : '（無法計算）'}`);
-    lines.push('─'.repeat(48));
+    lines.push('【法定時限計算】');
+    lines.push(`${policeHours}小時起算點：${fmtRocDateTime(s.arrestDateTime)}`);
+    lines.push(`加計障礙時間：${tot.hours} 小時 ${tot.minutes} 分`);
+    lines.push(`解送地檢署期限 檢警共同${combinedHours}小時(警方${policeHours}小時 + 法定障礙事由時間)：${deadlineStr}`);
+
+    return lines.join('\n');
   });
 
-  lines.push('');
-  lines.push('═'.repeat(48));
-  lines.push(`匯出時間：民國${rocNow}年${String(now.getMonth()+1).padStart(2,'0')}月${String(now.getDate()).padStart(2,'0')}日 ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`);
-  lines.push('═'.repeat(48));
-
-  return lines.join('\n');
+  // 多名嫌疑人以三個空行分隔
+  return records.join('\n\n\n');
 };
 
 export const exportObstacleRecordAsText = (caseSession) => {
