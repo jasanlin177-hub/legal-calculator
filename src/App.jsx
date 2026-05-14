@@ -67,17 +67,17 @@ const App = () => {
       <div className="max-w-5xl mx-auto space-y-4">
 
         {/* Header */}
-        <div className="bg-blue-900 rounded-xl shadow-lg p-5 flex justify-between items-center flex-wrap gap-4">
+        <div className="bg-gradient-to-br from-blue-800 via-blue-900 to-slate-900 rounded-xl shadow-xl p-5 flex justify-between items-center flex-wrap gap-4 border border-blue-700/40">
           <div>
             <h1 className="text-xl font-bold text-white flex items-center gap-2">
-              <Clock className="text-blue-300 w-6 h-6 flex-shrink-0" />
+              <Clock className="text-blue-300 w-6 h-6 flex-shrink-0 drop-shadow" />
               解送人犯法定障礙事由計算機
-              <span className="text-blue-300 font-normal text-sm ml-1">v3.0</span>
+              <span className="text-blue-300 font-normal text-sm ml-1">v3.1</span>
             </h1>
             <p className="text-blue-300 text-xs mt-1 flex items-center gap-2">
               設計：文一偵查林正賢　協作AI：Claude (2026/05 多人支援版)
               {isFetching && (
-                <span className="flex items-center gap-1 text-blue-200 bg-blue-800 px-2 py-0.5 rounded-full">
+                <span className="flex items-center gap-1 text-blue-200 bg-blue-800/70 px-2 py-0.5 rounded-full border border-blue-600/40">
                   <Loader2 className="w-3 h-3 animate-spin" /> 同步氣象署...
                 </span>
               )}
@@ -85,12 +85,12 @@ const App = () => {
           </div>
           <div className="flex items-center gap-2">
             {saveStatus === 'saved' && (
-              <span className="flex items-center gap-1 text-xs text-green-300 bg-green-900/50 px-2 py-1 rounded-full">
+              <span className="flex items-center gap-1 text-xs text-green-300 bg-green-900/50 px-2 py-1 rounded-full border border-green-700/40">
                 <CheckCircle className="w-3 h-3" /> 已儲存
               </span>
             )}
             {saveStatus === 'saving' && (
-              <span className="flex items-center gap-1 text-xs text-blue-200 bg-blue-800 px-2 py-1 rounded-full">
+              <span className="flex items-center gap-1 text-xs text-blue-200 bg-blue-800/70 px-2 py-1 rounded-full border border-blue-600/40">
                 <Loader2 className="w-3 h-3 animate-spin" /> 儲存中...
               </span>
             )}
@@ -98,13 +98,19 @@ const App = () => {
               onClick={manualSave}
               disabled={!caseSession.id}
               title={caseSession.id ? '儲存案件' : '請先輸入第一名嫌犯姓名及逮捕時間'}
-              className="flex items-center gap-1 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium transition"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed text-sm font-semibold text-white transition
+                bg-gradient-to-b from-white/20 to-white/5 border border-white/30
+                shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]
+                hover:from-white/30 hover:to-white/10 active:translate-y-px active:shadow-[inset_0_2px_3px_rgba(0,0,0,0.3)]"
             >
               <Save className="w-4 h-4" /> 儲存案件
             </button>
             <button
               onClick={() => setShowLoadModal(true)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white rounded-lg text-sm font-medium transition"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-semibold text-white transition
+                bg-gradient-to-b from-white/20 to-white/5 border border-white/30
+                shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]
+                hover:from-white/30 hover:to-white/10 active:translate-y-px active:shadow-[inset_0_2px_3px_rgba(0,0,0,0.3)]"
             >
               <FolderOpen className="w-4 h-4" /> 載入案件
             </button>
@@ -119,28 +125,37 @@ const App = () => {
         )}
 
         {/* 書表匯出面板 */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 space-y-4">
+        <div className="bg-white rounded-xl shadow-md border border-gray-100 p-5 space-y-4">
           {/* 當前嫌犯書表 */}
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
               當前嫌犯書表（{activeSuspect.suspectName || '—'}）
             </p>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => generateRightsNotification(buildDocData())}
-                className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white
+                  bg-gradient-to-b from-indigo-500 to-indigo-700
+                  shadow-[0_3px_6px_rgba(79,70,229,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-indigo-400 hover:to-indigo-600 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
               >
                 <FileText className="w-4 h-4" /> 權利告知書
               </button>
               <button
                 onClick={() => generateArrestNoticeSelf(buildDocData())}
-                className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white
+                  bg-gradient-to-b from-blue-500 to-blue-700
+                  shadow-[0_3px_6px_rgba(37,99,235,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-blue-400 hover:to-blue-600 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
               >
                 <FileText className="w-4 h-4" /> 告知本人通知書
               </button>
               <button
                 onClick={() => generateArrestNoticeRelative(buildDocData())}
-                className="flex items-center gap-1.5 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white
+                  bg-gradient-to-b from-cyan-500 to-cyan-700
+                  shadow-[0_3px_6px_rgba(8,145,178,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-cyan-400 hover:to-cyan-600 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
               >
                 <FileText className="w-4 h-4" /> 告知親友通知書
               </button>
@@ -149,14 +164,17 @@ const App = () => {
 
           {/* 案件批次操作 */}
           <div className="border-t border-gray-100 pt-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
               案件批次操作（{caseSession.suspects.length} 人）
             </p>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={handleBatchExport}
                 disabled={!!batchProgress}
-                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm disabled:opacity-50"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed
+                  bg-gradient-to-b from-emerald-500 to-emerald-700
+                  shadow-[0_3px_6px_rgba(5,150,105,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-emerald-400 hover:to-emerald-600 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
               >
                 <Download className="w-4 h-4" />
                 {batchProgress
@@ -165,7 +183,10 @@ const App = () => {
               </button>
               <button
                 onClick={() => exportObstacleRecordAsText(caseSession)}
-                className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium shadow-sm"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white
+                  bg-gradient-to-b from-amber-500 to-amber-700
+                  shadow-[0_3px_6px_rgba(180,83,9,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-amber-400 hover:to-amber-600 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
               >
                 <FileDown className="w-4 h-4" /> 匯出障礙事由記錄表
               </button>

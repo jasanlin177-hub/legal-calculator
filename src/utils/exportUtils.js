@@ -76,7 +76,7 @@ export const generateObstacleRecordText = (caseSession) => {
     // 9 種法定事由逐一列出；有資料者填入起迄時間，無則留空
     OBSTACLE_TYPES.forEach(t => {
       const matches = byType[String(t.id)] || [];
-      lines.push(`□ ${t.name}`);
+      lines.push(`${matches.length > 0 ? '■' : '□'} ${t.name}`);
       if (matches.length === 0) {
         lines.push(`  (${'　'.repeat(15)})`);
       } else {

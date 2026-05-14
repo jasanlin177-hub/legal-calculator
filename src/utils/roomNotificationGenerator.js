@@ -135,7 +135,7 @@ const buildFormTable = (suspects, isEntry, entryDT, exitDT, agencyName, caseCaus
     hCell('性　別',            { w: W[1], vm: 'start' }) +
     hCell('出　生',            { w: W[2]+W[3]+W[4], gs: 3 }) +
     hCell('職　業',            { w: W[5], vm: 'start' }) +
-    hCell('身分證\n統一編號',  { w: W[6], vm: 'start' }) +
+    hCell('身分證統一編號',    { w: W[6], vm: 'start' }) +
     hCell('住　居　所',        { w: W[7], vm: 'start' }) +
     hCell('候詢\n時數',        { w: W[8], vm: 'start' }) +
     hCell('強制到場時間',      { w: W[9]+W[10]+W[11]+W[12], gs: 4 }) +
