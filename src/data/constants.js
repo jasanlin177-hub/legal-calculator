@@ -481,7 +481,7 @@ export const POLICE_AGENCIES = {
 export const OBSTACLE_TYPES = [
   { id: 1, name: '因交通障礙或其他不可抗力之事由所生不得已之遲滯' },
   { id: 2, name: '在途解送期間' },
-  { id: 3, name: '依第一百條之三第一項規定不得為詢問者', autoFillSunrise: true },
+  { id: 3, name: '依第一百條之三第一項規定不得為詢問者（夜間停止訊問）', autoFillSunrise: true },
   { id: 4, name: '因被告或犯罪嫌疑人身體健康突發之事由，事實上無法訊問者' },
   { id: 5, name: '被告或犯罪嫌疑人表示已選任辯護人，因等候其辯護人到場致未予訊問者' },
   { id: 6, name: '被告或犯罪嫌疑人不通國語須由其通譯傳譯，因等候其通譯到場致未予訊問者' },

@@ -125,7 +125,8 @@ const buildFormTable = (suspects, isEntry, entryDT, exitDT, agencyName, caseCaus
     pn(rn('編號：', { sz: 22 }), { before: 0, after: 20 });
   const row0 = tr(
     tc(titleLeft,  { w: L_W, gs: L_SPAN }) +
-    tc(titleRight, { w: R_W, gs: R_SPAN })
+    tc(titleRight, { w: R_W, gs: R_SPAN }),
+    851  // 1.5 cm
   );
 
   // ── Row 1: 主要欄位標題（vMerge start for 單欄，gs for 跨欄）
@@ -202,10 +203,10 @@ const buildFormTable = (suspects, isEntry, entryDT, exitDT, agencyName, caseCaus
   const cizhiRow = tr(closingCell(pn(rn('　　　　此　致',                                               { sz: 24 }), { before: 0,  after: 0 })),                     567);
   const roomRow  = tr(closingCell(pn(rn('　　候詢室',                                                   { sz: 24 }), { before: 0,  after: 0 })),                     567);
   const sigRow   = tr(closingCell(
-    pn(rn('　　　　　　　　承辦人　　　　　　　　　　　　　敬會　勤務指揮中心　　　　機關主管長官',       { sz: 24 }), { before: 20, after: 0 }) +
+    pn(rn(`　　　　　　　　承辦人　　　　　　　　　　　　　敬會　勤務指揮中心${' '.repeat(20)}機關主管長官`, { sz: 24 }), { before: 20, after: 0 }) +
     pn(rn('　　　　　　　（簽　　章）',                                                                   { sz: 24 }), { before: 0,  after: 0 })
   ),                                                                                                                                            1134);
-  const stampRow = tr(closingCell(pn(rn('', { sz: 24 }), { before: 0, after: 0 }), { isLast: true }),   2835);
+  const stampRow = tr(closingCell(pn(rn('', { sz: 24 }), { before: 0, after: 0 }), { isLast: true }),   2438); // 4.3 cm
 
   return `<w:tbl>
 <w:tblPr>

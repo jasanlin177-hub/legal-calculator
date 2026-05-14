@@ -5,7 +5,8 @@ import {
   fetchSunTimesFromCWA,
   formatROCDateTime,
   calculateTotalObstacleTime,
-  calculateDeadline
+  calculateDeadline,
+  calcSunTimesNOAA
 } from '../utils/dateUtils';
 import { saveCase } from '../utils/db';
 
@@ -184,12 +185,20 @@ export const useCase = () => {
         const tmr = new Date(d);
         tmr.setDate(tmr.getDate() + 1);
         const tomorrowStr = localDateStr(tmr);
+
+        // NOAA 備援：依機關座標推算日出日沒，精度 ±2 分鐘
+        const agency = POLICE_AGENCIES[caseSession.policeAgency];
+        const sub    = agency?.subAgencies?.[caseSession.policeSubAgency];
+        const lat    = sub?.lat ?? agency?.lat ?? 25.04;
+        const lon    = sub?.lon ?? agency?.lon ?? 121.52;
+        const noaa   = calcSunTimesNOAA(lat, lon, todayStr);
+
         updateSuspectFields(suspectId, {
           isOffline: true,
-          sunTimes: {
-            sunset: '18:00',
+          sunTimes: noaa ?? {
+            sunset:  '18:00',
             sunrise: '06:00',
-            sunsetTime: `${todayStr}T18:00`,
+            sunsetTime:  `${todayStr}T18:00`,
             sunriseTime: `${tomorrowStr}T06:00`,
             sunriseDisplay: formatROCDateTime(`${tomorrowStr}T06:00`)
           }

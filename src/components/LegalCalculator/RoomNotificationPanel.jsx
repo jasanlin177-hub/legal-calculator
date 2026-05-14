@@ -3,41 +3,16 @@ import { FileText } from 'lucide-react';
 import { generateBothNotifications } from '../../utils/roomNotificationGenerator';
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
-const nowTimeStr = () => {
-  const d = new Date();
-  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-};
-const addHoursToDateTime = (dateStr, timeStr, h) => {
-  if (!dateStr || !/^\d{2}:\d{2}$/.test(timeStr)) return { date: dateStr, time: timeStr };
-  const d = new Date(`${dateStr}T${timeStr}`);
-  if (isNaN(d.getTime())) return { date: dateStr, time: timeStr };
-  d.setHours(d.getHours() + h);
-  return {
-    date: d.toISOString().slice(0, 10),
-    time: `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`,
-  };
+const tomorrowStr = () => {
+  const d = new Date(); d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0, 10);
 };
 
 const RoomNotificationPanel = ({ caseSession }) => {
   const [entryDate, setEntryDate] = useState(todayStr);
-  const [entryTime, setEntryTime] = useState(nowTimeStr);
-  const [exitDate,  setExitDate]  = useState(() => addHoursToDateTime(todayStr(), nowTimeStr(), 2).date);
-  const [exitTime,  setExitTime]  = useState(() => addHoursToDateTime(todayStr(), nowTimeStr(), 2).time);
-
-  const handleEntryDateChange = (val) => {
-    setEntryDate(val);
-    const next = addHoursToDateTime(val, entryTime, 2);
-    setExitDate(next.date);
-    setExitTime(next.time);
-  };
-  const handleEntryTimeChange = (val) => {
-    setEntryTime(val);
-    if (/^\d{2}:\d{2}$/.test(val)) {
-      const next = addHoursToDateTime(entryDate, val, 2);
-      setExitDate(next.date);
-      setExitTime(next.time);
-    }
-  };
+  const [entryTime, setEntryTime] = useState('21:00');
+  const [exitDate,  setExitDate]  = useState(tomorrowStr);
+  const [exitTime,  setExitTime]  = useState('08:00');
 
   const buildData = () => ({
     agencyName:  [caseSession.policeAgency, caseSession.policeSubAgency].filter(Boolean).join(''),
@@ -76,13 +51,13 @@ const RoomNotificationPanel = ({ caseSession }) => {
             <input
               type="date"
               value={entryDate}
-              onChange={e => handleEntryDateChange(e.target.value)}
+              onChange={e => setEntryDate(e.target.value)}
               className={dateCls}
             />
             <input
               type="text"
               value={entryTime}
-              onChange={e => handleEntryTimeChange(e.target.value)}
+              onChange={e => setEntryTime(e.target.value)}
               placeholder="HH:MM"
               maxLength={5}
               className={timeCls}
@@ -115,12 +90,8 @@ const RoomNotificationPanel = ({ caseSession }) => {
         className="bg-teal-600 text-white px-5 py-2.5 rounded-lg hover:bg-teal-700 transition text-sm font-medium flex items-center gap-2"
       >
         <FileText className="w-4 h-4" />
-        產出入室＋出室通知單（各含存根、送候詢室共 2 份）
+        匯出入室＋出室通知單（各含存根、送候詢室共 2 份）
       </button>
-
-      <p className="text-xs text-gray-400 mt-3">
-        時間格式：24小時制，例如 20:10。強制到場時間自動帶入各嫌犯的拘提/逮捕時間。入室時間修改時出室時間自動 +2 小時。時間不寫入案件存檔。
-      </p>
     </div>
   );
 };
