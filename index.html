@@ -25451,7 +25451,18 @@ const App = () => {
         isWanted: activeSuspect.isWanted,
         allDeadlines
       }
-    )
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center py-4 text-xs text-gray-400 flex items-center justify-center gap-2", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "累計使用次數" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "img",
+        {
+          src: "https://hits.sh/jasanlin177-hub.github.io/legal-calculator.svg?style=flat&color=4f86c6&labelColor=e2e8f0&label=%E7%B4%AF%E8%A8%88%E4%BD%BF%E7%94%A8",
+          alt: "累計使用次數",
+          className: "h-5"
+        }
+      )
+    ] })
   ] }) });
 };
 client.createRoot(document.getElementById("root")).render(
@@ -26451,6 +26462,10 @@ video {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
 }
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
 .py-8 {
   padding-top: 2rem;
   padding-bottom: 2rem;
@@ -26909,6 +26924,7 @@ video {
 }</style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
+
   </body>
 </html>
