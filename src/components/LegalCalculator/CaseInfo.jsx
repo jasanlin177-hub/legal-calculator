@@ -252,6 +252,56 @@ const CaseInfo = ({
             </select>
           </div>
         </div>
+
+        {/* 書表用額外欄位 */}
+        <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-600 mb-1">戶籍地/住居所</label>
+            <input
+              type="text"
+              value={activeSuspect.homeAddress || ''}
+              onChange={e => updateS('homeAddress', e.target.value)}
+              className={INPUT_CLS}
+              placeholder="戶籍地址（書表預填用）"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-1">聯絡電話</label>
+            <input
+              type="text"
+              value={activeSuspect.phone || ''}
+              onChange={e => updateS('phone', e.target.value)}
+              className={INPUT_CLS}
+              placeholder="手機或市話"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-1">身分別（法律扶助表用）</label>
+            <select
+              value={activeSuspect.suspectStatus || '一般'}
+              onChange={e => updateS('suspectStatus', e.target.value)}
+              className={SELECT_CLS}
+            >
+              <option value="一般">一般</option>
+              <option value="原住民">原住民</option>
+              <option value="身心障礙">身心障礙</option>
+            </select>
+          </div>
+          {(activeSuspect.suspectStatus === '原住民' || activeSuspect.suspectStatus === '身心障礙') && (
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                {activeSuspect.suspectStatus === '原住民' ? '族別（例：阿美族）' : '障礙類別代碼（例：第1類）'}
+              </label>
+              <input
+                type="text"
+                value={activeSuspect.suspectStatusNote || ''}
+                onChange={e => updateS('suspectStatusNote', e.target.value)}
+                className={INPUT_CLS}
+                placeholder={activeSuspect.suspectStatus === '原住民' ? '族別名稱' : '類別代碼'}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 3. 時間與地點設定區塊（per-suspect） */}

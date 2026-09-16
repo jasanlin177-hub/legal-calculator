@@ -4,6 +4,7 @@ import {
   generateDocxBlobArrestNoticeSelf,
   generateDocxBlobArrestNoticeRelative
 } from './documentGenerator';
+import { buildConsentFormBlobs } from './consentFormsGenerator';
 import { calculateTotalObstacleTime, calculateDeadline } from './dateUtils';
 import { OBSTACLE_TYPES } from '../data/constants';
 
@@ -116,12 +117,13 @@ export const exportObstacleRecordAsText = (caseSession) => {
 };
 
 // ─────────────────────────────────────────
-// 批次匯出所有嫌犯 × 3份書表
+// 批次匯出所有嫌犯 × 11份書表
+// （3份告知書 + 8份同意書/搜索扣押/兒少法書表）
 // ─────────────────────────────────────────
 export const batchExportAllDocuments = async (caseSession, onProgress) => {
   const suspects = caseSession.suspects;
   const base = buildBaseFilename(caseSession);
-  const total = suspects.length * 3;
+  const total = suspects.length * 11;
   let done = 0;
 
   const blobs = [];
@@ -140,9 +142,12 @@ export const batchExportAllDocuments = async (caseSession, onProgress) => {
       arrestLocation: s.arrestLocation
     };
     const name = s.suspectName || '未命名';
+    // 3 份告知書
     blobs.push({ name: `${base}_附件12_權利告知書_${name}.docx`, fn: () => generateDocxBlobRightsNotification(docData) });
     blobs.push({ name: `${base}_附件16_告知本人通知書_${name}.docx`, fn: () => generateDocxBlobArrestNoticeSelf(docData) });
     blobs.push({ name: `${base}_附件17_告知親友通知書_${name}.docx`, fn: () => generateDocxBlobArrestNoticeRelative(docData) });
+    // 8 份同意書/搜索扣押/兒少法書表
+    blobs.push(...buildConsentFormBlobs(caseSession, s, base));
   }
 
   const errors = [];

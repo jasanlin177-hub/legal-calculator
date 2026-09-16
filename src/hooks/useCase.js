@@ -22,6 +22,10 @@ const createNewSuspect = () => ({
   isWanted: 'false',
   arrestDateTime: formatInputDateTime(new Date()),
   arrestLocation: '',
+  homeAddress: '',
+  phone: '',
+  suspectStatus: '一般',
+  suspectStatusNote: '',
   sunTimes: null,
   isOffline: false,
   obstacles: []

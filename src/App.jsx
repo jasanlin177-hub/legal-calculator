@@ -9,6 +9,16 @@ import LoadCaseModal from './components/common/LoadCaseModal';
 import RoomNotificationPanel from './components/LegalCalculator/RoomNotificationPanel';
 import { generateRightsNotification, generateArrestNoticeSelf, generateArrestNoticeRelative } from './utils/documentGenerator';
 import { batchExportAllDocuments, exportObstacleRecordAsText } from './utils/exportUtils';
+import {
+  generateConsentInspection,
+  generateConsentSearch,
+  generateConsentUrine,
+  generateSearchSeizureRecord,
+  generateSeizureReceipt,
+  generateLegalAidNotice,
+  generateChildWelfareVisit,
+  generateChildWelfareInterview,
+} from './utils/consentFormsGenerator';
 
 const App = () => {
   const [showLoadModal, setShowLoadModal] = useState(false);
@@ -72,10 +82,10 @@ const App = () => {
             <h1 className="text-xl font-bold text-white flex items-center gap-2">
               <Clock className="text-blue-300 w-6 h-6 flex-shrink-0 drop-shadow" />
               解送人犯法定障礙事由計算機
-              <span className="text-blue-300 font-normal text-sm ml-1">v3.1</span>
+              <span className="text-blue-300 font-normal text-sm ml-1">v3.2</span>
             </h1>
             <p className="text-blue-300 text-xs mt-1 flex items-center gap-2">
-              設計：文一偵查林正賢　協作AI：Claude (2026/05 多人支援版)
+              設計：文一偵查林正賢　協作AI：Claude (2026/09 支援11種書表版)
               {isFetching && (
                 <span className="flex items-center gap-1 text-blue-200 bg-blue-800/70 px-2 py-0.5 rounded-full border border-blue-600/40">
                   <Loader2 className="w-3 h-3 animate-spin" /> 同步氣象署...
@@ -125,11 +135,11 @@ const App = () => {
         )}
 
         {/* 書表匯出面板 */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 p-5 space-y-4">
-          {/* 當前嫌犯書表 */}
+        <div className="bg-white rounded-xl shadow-md border border-gray-100 p-5 space-y-2">
+          {/* 告知書類 + 同意書類（同一列） */}
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
-              當前嫌犯書表（{activeSuspect.suspectName || '—'}）
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">
+              告知書類・同意書類（{activeSuspect.suspectName || '—'}）
             </p>
             <div className="flex flex-wrap gap-2">
               <button
@@ -159,12 +169,93 @@ const App = () => {
               >
                 <FileText className="w-4 h-4" /> 告知親友通知書
               </button>
+              <button
+                onClick={() => generateConsentInspection(caseSession, activeSuspect)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white
+                  bg-gradient-to-b from-violet-500 to-violet-700
+                  shadow-[0_3px_6px_rgba(109,40,217,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-violet-400 hover:to-violet-600 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
+              >
+                <FileText className="w-4 h-4" /> 勘察採證同意書
+              </button>
+              <button
+                onClick={() => generateConsentSearch(caseSession, activeSuspect)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white
+                  bg-gradient-to-b from-fuchsia-500 to-fuchsia-700
+                  shadow-[0_3px_6px_rgba(168,85,247,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-fuchsia-400 hover:to-fuchsia-600 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
+              >
+                <FileText className="w-4 h-4" /> 自願受搜索同意書
+              </button>
+              <button
+                onClick={() => generateConsentUrine(caseSession, activeSuspect)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white
+                  bg-gradient-to-b from-pink-500 to-pink-700
+                  shadow-[0_3px_6px_rgba(236,72,153,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-pink-400 hover:to-pink-600 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
+              >
+                <FileText className="w-4 h-4" /> 自願受採尿同意書
+              </button>
+            </div>
+          </div>
+
+          {/* 搜索扣押及特殊書表 */}
+          <div className="border-t border-gray-100 pt-2">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">
+              搜索扣押及其他書表（{activeSuspect.suspectName || '—'}）
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => generateSearchSeizureRecord(caseSession, activeSuspect)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white
+                  bg-gradient-to-b from-orange-500 to-orange-700
+                  shadow-[0_3px_6px_rgba(234,88,12,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-orange-400 hover:to-orange-600 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
+              >
+                <FileText className="w-4 h-4" /> 搜索扣押筆錄
+              </button>
+              <button
+                onClick={() => generateSeizureReceipt(caseSession, activeSuspect)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white
+                  bg-gradient-to-b from-amber-600 to-amber-800
+                  shadow-[0_3px_6px_rgba(180,83,9,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-amber-500 hover:to-amber-700 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
+              >
+                <FileText className="w-4 h-4" /> 扣押物品收據/無扣押物證明
+              </button>
+              <button
+                onClick={() => generateLegalAidNotice(caseSession, activeSuspect)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white
+                  bg-gradient-to-b from-slate-500 to-slate-700
+                  shadow-[0_3px_6px_rgba(71,85,105,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-slate-400 hover:to-slate-600 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
+              >
+                <FileText className="w-4 h-4" /> 法律扶助指派律師通知表
+              </button>
+              <button
+                onClick={() => generateChildWelfareVisit(caseSession, activeSuspect)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white
+                  bg-gradient-to-b from-green-600 to-green-800
+                  shadow-[0_3px_6px_rgba(22,163,74,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-green-500 hover:to-green-700 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
+              >
+                <FileText className="w-4 h-4" /> 兒童照顧查訪紀錄表
+              </button>
+              <button
+                onClick={() => generateChildWelfareInterview(caseSession, activeSuspect)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm font-semibold text-white
+                  bg-gradient-to-b from-teal-600 to-teal-800
+                  shadow-[0_3px_6px_rgba(13,148,136,0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:from-teal-500 hover:to-teal-700 active:translate-y-px active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
+              >
+                <FileText className="w-4 h-4" /> 兒童照顧面訪紀錄表
+              </button>
             </div>
           </div>
 
           {/* 案件批次操作 */}
-          <div className="border-t border-gray-100 pt-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+          <div className="border-t border-gray-100 pt-2">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">
               案件批次操作（{caseSession.suspects.length} 人）
             </p>
             <div className="flex flex-wrap gap-2">
@@ -179,7 +270,7 @@ const App = () => {
                 <Download className="w-4 h-4" />
                 {batchProgress
                   ? `匯出中 ${batchProgress.done}/${batchProgress.total}...`
-                  : `批次匯出全部書表（${caseSession.suspects.length}人 × 3份）`}
+                  : `批次匯出全部書表（${caseSession.suspects.length}人 × 11份）`}
               </button>
               <button
                 onClick={() => exportObstacleRecordAsText(caseSession)}
@@ -264,6 +355,16 @@ const App = () => {
           isWanted={activeSuspect.isWanted}
           allDeadlines={allDeadlines}
         />
+
+        {/* 頁尾：累計使用次數 */}
+        <div className="text-center py-4 text-xs text-gray-400 flex items-center justify-center gap-2">
+          <span>累計使用次數</span>
+          <img
+            src="https://hits.sh/jasanlin177-hub.github.io/legal-calculator.svg?style=flat&color=4f86c6&labelColor=e2e8f0&label=%E7%B4%AF%E8%A8%88%E4%BD%BF%E7%94%A8"
+            alt="累計使用次數"
+            className="h-5"
+          />
+        </div>
 
       </div>
     </div>
