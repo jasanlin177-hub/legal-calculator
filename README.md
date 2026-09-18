@@ -100,18 +100,46 @@ node scripts/inline-html.cjs dist_test dist/index.html                 # 內嵌�
 > 網站實際讀取的是**專案根目錄**的 `index.html`，
 > 放到其他位置（例如子資料夾）**不會生效**。
 
-更新流程：
+### ⚠️ 重要限制：根目錄 `index.html` 有兩種版本
 
-1. 依上述步驟建置出單檔 `dist/index.html`
-2. **複製到專案根目錄覆蓋 `index.html`**
+這支檔案身兼二職，**本機與 GitHub 上的內容永遠不同，且兩者都是正確的**：
+
+| 位置 | 內容 | 大小 | 用途 |
+|------|------|------|------|
+| 本機（版控中）| Vite 開發進入點，引用 `/src/main.jsx` | ~340 bytes | `npm run dev` 需要 |
+| GitHub 上 | 建置後的完整單檔 | ~1.3 MB | 網站實際檔案 |
+
+兩者內容互斥：放開發版上去網站是空白頁，放建置版在本機則 `npm run dev` 會壞掉。
+
+### 部署流程（只能用 GitHub 網頁上傳）
+
+1. 建置出單檔：
    ```bash
-   cp dist/index.html index.html
+   npm run build:single
    ```
-3. commit 後 push，GitHub Pages 約 1～2 分鐘自動更新
-4. 開啟網站按 `Ctrl + Shift + R` 強制重新整理確認
+2. 到 GitHub repo 首頁 → **Add file** → **Upload files**
+3. 拖曳 **`dist/index.html`** 上傳，並將檔名指定為根目錄的 `index.html`（確認取代）
+4. Commit directly to the `main` branch
+5. 等 1～2 分鐘，開網站按 `Ctrl + Shift + R` 強制重新整理確認
 
-⚠️ 根目錄 `index.html` 在開發時是 Vite 進入點（引用 `/src/main.jsx`），
-部署時會被建置產物覆蓋。本機開發用 `npm run dev`，不受影響。
+> 💡 本機的根目錄 `index.html` **維持開發版不要動**，部署只透過網頁上傳。
+
+### 🚫 絕對不要做的事
+
+| 動作 | 後果 |
+|------|------|
+| `git pull` / `git merge origin/main` | 會把 GitHub 上 1.3 MB 的建置版覆蓋到本機根目錄，**`npm run dev` 立刻壞掉** |
+| `git push` | 因網頁上傳已在 GitHub 端產生本機沒有的 commit，兩邊歷史分歧，push 會被拒絕（non-fast-forward）|
+| `cp dist/index.html index.html` 後提交 | 本機開發環境壞掉，且與 GitHub 產生無意義的衝突 |
+
+**原始碼要同步到 GitHub 時**，一樣用網頁 **Upload files** 上傳 `src/`、`scripts/`
+等資料夾即可，不要用 git push。
+
+**如果不慎執行了 `git pull` 導致本機開發環境壞掉**，還原方式：
+```bash
+git checkout HEAD~1 -- index.html   # 取回開發版 index.html
+npm run dev                          # 確認恢復正常
+```
 
 ---
 
