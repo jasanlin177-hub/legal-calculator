@@ -8,7 +8,10 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "dev": "vite",
+    "check": "node scripts/check-contracts.cjs",
+    "prebuild": "npm run check",
     "build": "node --max-old-space-size=4096 node_modules/vite/bin/vite.js build && node scripts/inline-html.cjs",
+    "build:single": "npm run check && node node_modules/vite/bin/vite.js build --config vite.config.test.js && node scripts/inline-html.cjs dist_test dist/index.html",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
