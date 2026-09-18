@@ -40,46 +40,84 @@ export const fetchSunTimesFromCWA = async (dateTimeStr, countyName) => {
   try {
     const arrestDate = new Date(dateTimeStr);
     const todayStr = arrestDate.toISOString().split('T')[0];
-    
+
     // 計算明天日期字串 (用於抓取隔日日出)
     const tomorrow = new Date(arrestDate);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().split('T')[0];
 
-    // 氣象署 API：日出日沒時刻資料集
+    // timeTo 需設為「明天+1」，API 才會同時回傳今天與明天兩筆資料
+    const dayAfterTomorrow = new Date(arrestDate);
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+    const dayAfterTomorrowStr = dayAfterTomorrow.toISOString().split('T')[0];
+
+    // 氣象署 API：日出日沒時刻資料集（官方參數為 CountyName，非 locationName）
     const encodedCounty = encodeURIComponent(countyName);
-    const url = `https://opendata.cwa.gov.tw/api/v1/rest/datastore/A-B0062-001?Authorization=${CWA_API_KEY}&format=JSON&locationName=${encodedCounty}&timeFrom=${todayStr}&timeTo=${tomorrowStr}`;
+    const url = `https://opendata.cwa.gov.tw/api/v1/rest/datastore/A-B0062-001?Authorization=${CWA_API_KEY}&format=JSON&CountyName=${encodedCounty}&timeFrom=${todayStr}&timeTo=${dayAfterTomorrowStr}`;
 
     const response = await fetch(url);
     const result = await response.json();
 
-    if (result.success === "true") {
-      const location = result.records.location[0];
-      
-      // 擷取當天日沒與隔天日出
-      const todayRecord = location.time.find(t => t.dataTime === todayStr);
-      const tomorrowRecord = location.time.find(t => t.dataTime === tomorrowStr);
-
-      if (todayRecord && tomorrowRecord) {
-        const sunsetHM = todayRecord.parameter.find(p => p.parameterName === "日沒時刻")?.parameterValue;
-        const sunriseHM = tomorrowRecord.parameter.find(p => p.parameterName === "日出時刻")?.parameterValue;
-
-        // 轉換為系統可識別日期格式
-        const sunsetFull = new Date(`${todayStr}T${sunsetHM}:00`);
-        const sunriseFull = new Date(`${tomorrowStr}T${sunriseHM}:00`);
-
-        return {
-          sunset: sunsetHM,   // "17:46"
-          sunrise: sunriseHM, // "06:31"
-          sunsetTime: formatInputDateTime(sunsetFull),
-          sunriseTime: formatInputDateTime(sunriseFull),
-          sunriseDisplay: formatROCDateTime(formatInputDateTime(sunriseFull))
-        };
-      }
+    // ── API 契約驗證：任一項不符即明確報錯，不可靜默回傳錯誤資料 ──
+    if (result.success !== "true") {
+      console.error(`[氣象署API] 回應 success 非 true，實際值：${result.success}`, result);
+      return null;
     }
-    return null;
+
+    const locations = result?.records?.locations?.location;
+    if (!Array.isArray(locations) || locations.length === 0) {
+      console.error(
+        '[氣象署API] 回傳結構不符預期：找不到 records.locations.location 陣列。' +
+        'API 規格可能已變更，請查閱官方 Swagger 文件確認。',
+        result
+      );
+      return null;
+    }
+
+    // 必須比對縣市，抓錯縣市的資料看起來一樣合法，絕不可矇混使用
+    const location = locations.find(l => l.CountyName === countyName);
+    if (!location) {
+      console.error(
+        `[氣象署API] 回傳資料中找不到指定縣市「${countyName}」。` +
+        `實際回傳縣市：${locations.map(l => l.CountyName).join('、')}。` +
+        '請確認查詢參數名稱是否為 CountyName（非 locationName）。'
+      );
+      return null;
+    }
+
+    // 擷取當天日沒與隔天日出
+    const todayRecord = location.time?.find(t => t.Date === todayStr);
+    const tomorrowRecord = location.time?.find(t => t.Date === tomorrowStr);
+
+    if (!todayRecord || !tomorrowRecord) {
+      console.error(
+        `[氣象署API] 「${countyName}」缺少所需日期資料（需 ${todayStr} 與 ${tomorrowStr}）。` +
+        `實際回傳日期：${(location.time || []).map(t => t.Date).join('、')}`
+      );
+      return null;
+    }
+
+    const sunsetHM = todayRecord.SunSetTime;
+    const sunriseHM = tomorrowRecord.SunRiseTime;
+    if (!sunsetHM || !sunriseHM) {
+      console.error('[氣象署API] 缺少 SunSetTime 或 SunRiseTime 欄位', { todayRecord, tomorrowRecord });
+      return null;
+    }
+
+    // 轉換為系統可識別日期格式
+    const sunsetFull = new Date(`${todayStr}T${sunsetHM}:00`);
+    const sunriseFull = new Date(`${tomorrowStr}T${sunriseHM}:00`);
+
+    return {
+      sunset: sunsetHM,   // "17:46"
+      sunrise: sunriseHM, // "06:31"
+      sunsetTime: formatInputDateTime(sunsetFull),
+      sunriseTime: formatInputDateTime(sunriseFull),
+      sunriseDisplay: formatROCDateTime(formatInputDateTime(sunriseFull))
+    };
   } catch (error) {
-    console.error("氣象署 API 連線失敗，請檢查網路:", error);
+    // 僅有此處才是真正的連線失敗（網路中斷、CORS、DNS 等）
+    console.error("[氣象署API] 連線失敗（網路問題），將改用 NOAA 離線推算：", error);
     return null;
   }
 };
