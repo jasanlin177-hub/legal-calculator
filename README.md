@@ -78,27 +78,40 @@ npm run dev
 
 ### 建置單檔版本
 
-正式部署為「單一 index.html」離線檔。採兩步驟建置：
+正式部署為「單一 index.html」離線檔：
 
 ```bash
-# 1. 以測試設定 build（資產不分割，輸出至 dist_test/）
-node node_modules/vite/bin/vite.js build --config vite.config.test.js
+# 一鍵建置（含契約檢查）
+npm run build:single
 
-# 2. 將所有 JS/CSS 內嵌成單一 HTML
-node scripts/inline-html.cjs dist_test dist/index.html
+# 或分步執行：
+node scripts/check-contracts.cjs                                       # 契約檢查
+node node_modules/vite/bin/vite.js build --config vite.config.test.js   # 輸出至 dist_test/
+node scripts/inline-html.cjs dist_test dist/index.html                 # 內嵌成單一 HTML
 ```
 
-產出的 `dist/index.html` 為完整離線單檔，複製到 `legal-calculator/index.html` 即為 GitHub Pages 部署內容。
+產出的 `dist/index.html` 即為完整離線單檔。
 
 ---
 
 ## 部署
 
-GitHub Pages 提供 `legal-calculator/index.html`。更新流程：
+> **GitHub Pages 設定：`main` 分支 + `/ (root)` 資料夾**
+> 網站實際讀取的是**專案根目錄**的 `index.html`，
+> 放到其他位置（例如子資料夾）**不會生效**。
+
+更新流程：
 
 1. 依上述步驟建置出單檔 `dist/index.html`
-2. 覆蓋 `legal-calculator/index.html`
-3. commit 後 push，GitHub Pages 自動更新
+2. **複製到專案根目錄覆蓋 `index.html`**
+   ```bash
+   cp dist/index.html index.html
+   ```
+3. commit 後 push，GitHub Pages 約 1～2 分鐘自動更新
+4. 開啟網站按 `Ctrl + Shift + R` 強制重新整理確認
+
+⚠️ 根目錄 `index.html` 在開發時是 Vite 進入點（引用 `/src/main.jsx`），
+部署時會被建置產物覆蓋。本機開發用 `npm run dev`，不受影響。
 
 ---
 
